@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Emotion-to-Material Lab - Version 1</title>
+  <meta name="description" content="Generate small material experiments from an emotion and available materials.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23101010'/%3E%3Cpath d='M12 42L29 13l9 18 14-9' fill='none' stroke='%23ff6b35' stroke-width='6'/%3E%3C/svg%3E">
+  <style>
+    :root { color-scheme: light; --ink:#151515; --paper:#f4f0e8; --orange:#ff5a2a; --line:#b9b1a5; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Arial, sans-serif; color:var(--ink); background:var(--paper); }
+    header { padding:32px 6vw 22px; border-bottom:1px solid var(--line); }
+    h1 { margin:0 0 8px; font-size:clamp(2rem,5vw,4rem); letter-spacing:-.05em; }
+    header p { margin:0; max-width:760px; }
+    main { width:min(1080px,90vw); margin:28px auto 60px; display:grid; grid-template-columns:340px 1fr; gap:28px; }
+    section { background:#fff; border:1px solid var(--line); padding:22px; }
+    h2 { margin-top:0; font-size:1.2rem; }
+    label { display:block; margin:14px 0 6px; font-weight:700; }
+    input[type=text], select { width:100%; padding:10px; border:1px solid #888; font:inherit; }
+    .checks label { font-weight:400; margin:9px 0; }
+    button { border:0; padding:12px 16px; margin:14px 8px 0 0; font-weight:700; cursor:pointer; background:var(--orange); color:#fff; }
+    button.secondary { background:#d8d2c8; color:#111; }
+    .error { color:#b21f16; margin-top:10px; min-height:1.3em; }
+    .empty { color:#666; padding:42px 0; text-align:center; }
+    .card { border-top:5px solid var(--orange); padding:18px; margin:0 0 18px; background:#faf8f4; }
+    .card h3 { margin:0 0 8px; }
+    .card p, .card li { line-height:1.45; }
+    .tag { color:var(--orange); font-weight:700; }
+    @media (max-width:780px){ main{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Emotion-to-Material Lab</h1>
+    <p>Enter a feeling and your materials. The app gives three experiments to begin exploring.</p>
+  </header>
+  <main>
+    <section aria-labelledby="setup-title">
+      <h2 id="setup-title">Your setup</h2>
+      <label for="emotion">Emotion or tension</label>
+      <input id="emotion" type="text" placeholder="Example: wanting closeness but needing distance">
+      <label>Materials available</label>
+      <div class="checks" id="materials">
+        <label><input type="checkbox" value="Laptop with p5.js" checked> Laptop with p5.js</label>
+        <label><input type="checkbox" value="Projector" checked> Projector</label>
+        <label><input type="checkbox" value="Tracing paper" checked> Tracing paper</label>
+        <label><input type="checkbox" value="Thread" checked> Thread</label>
+        <label><input type="checkbox" value="Modeling wax"> Modeling wax</label>
+        <label><input type="checkbox" value="Ink"> Ink</label>
+      </div>
+      <label for="space">Workspace</label>
+      <select id="space"><option>Tabletop and wall</option><option>Tabletop only</option><option>Wall only</option></select>
+      <button id="generate">Generate experiments</button>
+      <button id="clear" class="secondary">Clear</button>
+      <div class="error" id="error"></div>
+    </section>
+    <section aria-labelledby="results-title">
+      <h2 id="results-title">Material experiments</h2>
+      <div id="results" class="empty">Your experiments will appear here.</div>
+    </section>
+  </main>
+  <script>
+    const emotion = document.querySelector('#emotion');
+    const results = document.querySelector('#results');
+    const error = document.querySelector('#error');
+    const selected = () => [...document.querySelectorAll('#materials input:checked')].map(x=>x.value);
+    document.querySelector('#generate').addEventListener('click',()=>{
+      if(!emotion.value.trim() || selected().length===0){ error.textContent='Please fill the form.'; return; }
+      error.textContent='';
+      const m=selected();
+      const cards=[
+        {t:'Layered Projection',q:'How can layers change the feeling of '+emotion.value.trim()+'?',v:'Change the paper spacing and number of layers.',s:['Make a slow pulsing shape in p5.js.','Suspend several tracing-paper sheets with thread.','Project through them and move the layers.','Photograph the strongest moment.'],o:'Look for softness, shadows, and fragmentation.'},
+        {t:'Wax Boundary',q:'How can a barrier show '+emotion.value.trim()+'?',v:'Change both wax thickness and projector distance.',s:['Mold three wax shapes.','Attach them inside the projection area.','Project a moving grid over the wax.','Compare the visual changes.'],o:'Look for distortion and where light disappears.'},
+        {t:'Ink and Thread Trace',q:'How can a trace communicate '+emotion.value.trim()+'?',v:'Change thread tension and the amount of ink.',s:['Sew thread through tracing paper.','Make some threads loose and others tight.','Add ink and project a grid over the surface.','Record how the trace changes.'],o:'Look for contrast between the controlled grid and unpredictable ink.'}
+      ];
+      results.className='';
+      results.innerHTML=cards.map((c,i)=>`<article class="card"><div class="tag">Experiment ${i+1}</div><h3>${c.t}</h3><p><b>Question:</b> ${c.q}</p><p><b>Variable:</b> ${c.v}</p><p><b>Materials:</b> ${m.join(', ')}</p><ol>${c.s.map(x=>`<li>${x}</li>`).join('')}</ol><p><b>Observe:</b> ${c.o}</p><p><b>Reflect:</b> Does this feel closer or more distant?</p></article>`).join('');
+    });
+    document.querySelector('#clear').addEventListener('click',()=>{emotion.value=''; results.className='empty'; results.textContent='Your experiments will appear here.'; error.textContent='';});
+  </script>
+</body>
+</html>
